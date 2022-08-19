@@ -59,7 +59,7 @@ public class RedisTestController {
      */
     @GetMapping("/persistenceHash")
     public ReturnResponse persistenceHash(@RequestParam("key") String key) {
-        return redisTestService.persistenceHash(key) ? ReturnResponse.makeOkMessage() : ReturnResponse.makeFailMessage("寄");
+        return redisTestService.persistenceHash(key) ? ReturnResponse.makeOkMessage() : ReturnResponse.makeFailMessage("没有所指定的键值对（内定的嗷）");
     }
 
     @GetMapping("/autoPersistenceHash")
@@ -67,5 +67,10 @@ public class RedisTestController {
     public ReturnResponse autoPersistenceHash(){
         log.warn("自动存储");
         return redisTestService.persistenceHash("auto") ? ReturnResponse.makeOkMessage() : ReturnResponse.makeFailMessage("寄");
+    }
+
+    @GetMapping("/keySets")
+    public ReturnResponse ketSets(@RequestParam("hashKey") String hashKey){
+        return ReturnResponse.makeOkMessage(redisService.scanSerializeHash(hashKey));
     }
 }

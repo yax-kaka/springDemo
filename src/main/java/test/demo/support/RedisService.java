@@ -1,13 +1,20 @@
 package test.demo.support;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.*;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class RedisService {
     @Resource //没有@Resoure注解，stringRedisTemplate会报空指针异常
     private StringRedisTemplate stringRedisTemplate;  //StringRedisTemplate使用的是StringRedisSerializer
@@ -109,8 +116,19 @@ public class RedisService {
      * @param key
      * @return Cursor
      */
-    public Cursor<Map.Entry<Object, Object>> scanSerializeHash(String key) {
-        return redisTemplate.opsForHash().scan(key, ScanOptions.NONE);
+    public List<Map.Entry<Object,Object>> scanSerializeHash(String key) {
+        List<Map.Entry<Object,Object>> result = new ArrayList<>();
+        try {
+            Cursor<Map.Entry<Object, Object>> cursor = redisTemplate.opsForHash().scan(key, ScanOptions.NONE);
+            while (cursor.hasNext()) {
+                Map.Entry<Object, Object> map = cursor.next();
+                result.add(map);
+            }
+            cursor.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
     /**
      * @param  key
@@ -162,4 +180,28 @@ public class RedisService {
         redisTemplate.opsForHash().delete(key, Objects);
     }
 
+    public List<Object> getSerializeKeys(String hashKey, String filed){
+        long start = System.currentTimeMillis();
+        //需要匹配的key
+        String patternKey =  "".equals(filed) ? "*" : "xx_1";
+        ScanOptions options = ScanOptions.scanOptions()
+                //这里指定每次扫描key的数量(很多博客瞎说要指定Integer.MAX_VALUE，这样的话跟        keys有什么区别？)
+                .count(10000)
+                .match(patternKey).build();
+//        RedisSerializer<String> redisSerializer = (RedisSerializer<String>) redisTemplate.getKeySerializer();
+//        Cursor cursor = (Cursor) redisTemplate.executeWithStickyConnection(redisConnection -> new ConvertingCursor<>(redisConnection.scan(options), redisSerializer::deserialize));
+        Cursor<Map.Entry<Object, Object>> cursor = redisTemplate.opsForHash().scan(hashKey+"*", options);
+        List<Object> result = new ArrayList<>();
+        while(cursor.hasNext()){
+            result.add(cursor.next());
+        }
+        //切记这里一定要关闭，否则会耗尽连接数。报Cannot get Jedis connection; nested exception is redis.clients.jedis.exceptions.JedisException: Could not get a
+        try{
+            cursor.close();
+        } catch (IOException ioe){
+            ioe.printStackTrace();
+        }
+        log.info("scan扫描共耗时：{} ms key数量：{}",System.currentTimeMillis()-start,result.size());
+        return result;
+    }
 }
