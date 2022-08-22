@@ -2,6 +2,8 @@ package test.demo.controller;
 
 import org.apache.ibatis.annotations.Param;
 import test.demo.service.LocalTestService;
+import test.demo.service.impl.ManWash;
+import test.demo.service.impl.WomanWash;
 import test.demo.support.RedisService;
 import test.demo.vo.TestTableDTO;
 import test.demo.vo.TestTableRequestVO;
@@ -97,5 +99,13 @@ public class LocalTestController {
         return ReturnResponse.makeFailMessage("寄");
     }
 
+    @GetMapping("/aspect")
+    public ReturnResponse aspectTest() {
+        ManWash manWash = new ManWash();
+        WomanWash womanWash = new WomanWash();
+        manWash.takeAWash();
+        womanWash.takeAWash();
+        return ReturnResponse.makeOkMessage();
+    }
 
 }
