@@ -18,6 +18,10 @@ spring:
   jpa:
     open-in-view: false
 
+  application:
+    name: springfox-swagger
+
+
   datasource:
     url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
@@ -34,3 +38,10 @@ spring:
         max-idle: 1000
         min-idle: 50
         max-wait: 2000
+
+  swagger:
+    enable: true
+    application-name: ${spring.application.name}
+    application-version: 1.0
+    application-description: springfox swagger 3.0整合Demo
+    try-host: http://localhost:${server.port}

@@ -1,6 +1,9 @@
 package test.demo.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/redis")
 @RequiredArgsConstructor
+@Api(tags = "redis相关测试接口")
 public class RedisTestController {
 
     private final RedisService redisService;
@@ -34,6 +38,7 @@ public class RedisTestController {
      * @param redisTestDTO
      * @return ReturnResponse
      */
+    @ApiOperation("添加序列化的哈希数据")
     @PostMapping("/setSerializeHash")
     public ReturnResponse setSerializeHash(HttpServletRequest httpServletRequest, @RequestBody RedisTestDTO redisTestDTO) {
         String ip = IpUtil.getIp(httpServletRequest);
